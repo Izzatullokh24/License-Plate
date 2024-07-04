@@ -1,11 +1,3 @@
-"""
-License Plate Detection and Recognition
-
-Author: Izzatullokh Makhammadjonov
-Email: izzatullokhm@gmail.com
-GitHub: https://github.com/Izzatullokh24
-"""
-
 import streamlit as st
 import cv2
 import torch
@@ -18,9 +10,13 @@ from ultralytics import YOLO  # Import YOLO from ultralytics
 import tempfile
 import moviepy.editor as moviepy
 import concurrent.futures
+import os
 
-# Specify the path to the Tesseract executable (update this path if necessary)
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# Specify the path to the Tesseract executable
+if os.name == 'nt':  # For Windows
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+else:  # For Unix-based systems (e.g., Streamlit Cloud)
+    pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
 
 # Load YOLOv8 model
 model = YOLO('best.pt')  # Load the custom YOLOv8 model
@@ -81,7 +77,7 @@ def process_frame(frame):
     return processed_frame, extracted_text
 
 # Function to process video frames
-def process_video(video_path, skip_frames=1, resize_factor=0.5):
+def process_video(video_path, skip_frames=2, resize_factor=0.5):
     cap = cv2.VideoCapture(video_path)
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) * resize_factor)
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) * resize_factor)
@@ -145,11 +141,7 @@ def get_image_download_link(img, filename, text):
     return href, text_file
 
 # Streamlit app
-st.title("License Plate Detection and Extract text")
-
-
-# File uploader
-uploaded_file = st.file_uploader("Choose an image or video...", type=["jpg", "jpeg", "png", "mp4", "avi", "mov", "mkv"])
+st.title("License Plate Detection and Recognition and Extract Number Plate Text")
 
 # Display project description
 st.markdown("""
@@ -159,13 +151,17 @@ Once the license plates are detected, the text on the plates is extracted using 
 You can upload images or videos, and the application will process them to detect license plates 
 and extract the text.
 
-**Note:** You can download the processed video which contains the detected license plates highlighted.
+**Note:** The extracted text is displayed for images, but not for videos. You can download the processed video which contains the detected license plates highlighted.
 
 ## Author Information
 **Author:** Izzatullokh Makhammadjonov  
 **Email:** izzatullokhm@gmail.com  
 **GitHub:** [Izzatullokh24](https://github.com/Izzatullokh24)
 """)
+
+# File uploader
+uploaded_file = st.file_uploader("Choose an image or video...", type=["jpg", "jpeg", "png", "mp4", "avi", "mov", "mkv"])
+
 if uploaded_file is not None:
     file_type = uploaded_file.type.split('/')[0]
     
